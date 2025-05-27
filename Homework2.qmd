@@ -1,0 +1,198 @@
+---
+title: "Programming in Base R"
+format: pdf
+editor: visual
+---
+
+## Task 1: Basic Vector practice
+
+### Question 1
+
+```{r}
+pre <- c(130, 128, 116, 124, 133, 134, 118, 126, 114, 127, 141, 138, 128, 140, 
+         137, 131, 120, 128, 139, 135)
+post <- c(114, 98, 113, 99, 107, 116, 113, 111, 119, 117, 101, 119, 130, 122, 
+          106, 106, 124, 102, 117, 113)
+```
+
+### Question 2
+
+```{r}
+names_obj <- paste("Subject", 1:20, sep = "_")
+
+names(pre) <- names_obj
+names(post) <- names_obj
+```
+
+### Question 3
+
+```{r}
+diff_op <- pre - post
+diff_op
+```
+
+### Question 4
+
+```{r}
+mean(diff_op)
+```
+
+### Question 5
+
+```{r}
+which(diff_op > 0)
+```
+
+### Question 6
+
+```{r}
+diff_op[which(diff_op > 0)]
+```
+
+### Question 7
+
+```{r}
+mean(diff_op[which(diff_op > 0)])
+```
+
+## Task 2: Basic Data Frame practice
+
+### Question 1
+
+```{r}
+bp_data_frame <- data.frame(names_obj, pre, post, diff_op)
+bp_data_frame
+```
+
+### Question 2
+
+```{r}
+bp_data_frame[bp_data_frame$diff_op < 0,]
+```
+
+### Question 3
+
+```{r}
+bp_data_frame$normal <- (bp_data_frame$post < 120)
+```
+
+### Question 4
+
+```{r}
+knitr::kable(bp_data_frame)
+```
+
+## Task 3: List Practice
+
+### Question 1
+
+```{r}
+pre_placebo <- c(138, 135, 147, 117, 152, 134, 114, 121, 131, 130)
+post_placebo <- c(105, 136, 123, 130, 134, 143, 135, 139, 120, 124)
+diff_placebo <- pre_placebo - post_placebo
+
+names_pla <- paste("Subject", 1:10, sep = "_")
+
+bp_df_placebo <- data.frame(names_pla, pre_placebo, post_placebo, diff_placebo)
+bp_df_placebo$normal <- (bp_df_placebo$post_placebo < 120)
+```
+
+### Question 2
+
+```{r}
+bp_list <- list(treatment = bp_data_frame, placebo = bp_df_placebo)
+```
+
+### Question 3
+
+```{r}
+bp_list[1]
+bp_list[[1]]
+bp_list$treatment
+```
+
+### Question 4
+
+```{r}
+bp_list$placebo[,2]
+```
+
+## Task 4: Control Flow Practice
+
+### Question 1
+
+```{r}
+bp_data_frame$status <- character(20)
+bp_df_placebo$status <- character(10)
+
+bp_list <- list(treatment = bp_data_frame, placebo = bp_df_placebo)
+```
+
+### Question 2
+
+```{r}
+for(i in 1:nrow(bp_list$treatment)){
+  bp = bp_list$treatment[i,3]
+  if(bp > 130){
+    bp_list$treatment[i,6] = "High"
+  } else if(120 < bp & bp <= 130){
+    bp_list$treatment[i,6] = "Borderline"
+  } else if(bp <= 120){
+    bp_list$treatment[i,6] = "Optimal"
+  }
+}
+
+bp_list$treatment
+```
+
+### Question 3
+
+```{r}
+for(i in 1:nrow(bp_list$placebo)){
+  bp = bp_list$placebo[i,3]
+  if(bp > 130){
+    bp_list$placebo[i,6] = "High"
+  } else if(120 < bp & bp <= 130){
+    bp_list$placebo[i,6] = "Borderline"
+  } else if(bp <= 120){
+    bp_list$placebo[i,6] = "Optimal"
+  }
+}
+
+bp_list$placebo
+```
+
+## Task 5: Function Writing
+
+### Question 1
+
+```{r}
+my_function <- function(list, stat = "mean"){
+  my_fun <- get(stat)
+
+  names1 <- paste("treat", c("pre", "post", "diff"), stat, sep = "_")
+  names2 <- paste("placebo", c("pre", "post", "diff"), stat, sep = "_")
+  names <- c(names1, names2)
+  
+  values <- c()
+
+  for(i in c(2:4)){
+    trt_value <- my_fun(list$treatment[[i]])
+    values <- c(values, trt_value)
+  }
+  
+  for(i in c(2:4)){
+    pla_value <- my_fun(list$placebo[[i]])
+    values <- c(values, pla_value)
+  }
+  
+  names(values) <- names
+  return(values)
+}
+
+my_function(bp_list)
+my_function(bp_list, "var")
+my_function(bp_list, "sd")
+my_function(bp_list, "min")
+my_function(bp_list, "max")
+```
